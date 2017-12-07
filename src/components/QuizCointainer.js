@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import data from "../jsondata/data.json";
-import {ListGroup ,Col ,Row,ToggleButtonGroup,ToggleButton ,ButtonGroup,ListGroupItem, Button, Panel, Well} from "react-bootstrap"
-import arrayShuffle from "array-shuffle";
+import {Col ,Row,ToggleButtonGroup,ToggleButton ,ButtonGroup, Button, Panel} from "react-bootstrap"
 
 export default class Quiz extends Component {
     constructor(){
@@ -15,7 +14,10 @@ export default class Quiz extends Component {
             validationStatus: null,
             key: '',
             color: [],
-            score: 0
+            score: 0,
+            isChoosed : true,
+            startQuiz: false,
+            timer: ''
         }
         this.Nextquestion=this.Nextquestion.bind(this);
         this.handleChoose=this.handleChoose.bind(this);
@@ -25,16 +27,20 @@ export default class Quiz extends Component {
     }
    
     arrayShufle(data){
-        var i,j;
-        for(i=data.length-1; i>0; i--){
+        var i,j,k=1;
+        for(i=data.length-1; i>-1; i--){
             const j = Math.floor(Math.random() * (i+1));
             [data[i], data[j]] = [data[j],data[i]];
+            
         }
         return data;
     }
 
     componentWillMount() {
-        
+        data.map(option=>{
+           return this.arrayShufle(option.options);
+        })
+
        this.setState({
            data: this.arrayShufle(data)
        });
@@ -47,9 +53,9 @@ export default class Quiz extends Component {
        this.setState({
            userValue: user,
            disabled: true,
+           isChoosed: false
         });
         const score = this.state.score + 1;
-        console.log(this.state.userValue,3)
         if(answer === e.target.value){
             this.setState({
               validationState: "success",
@@ -87,6 +93,7 @@ export default class Quiz extends Component {
         }
     }
 
+
     handleResultValidate(count,option,answer){
         if(this.state.userValue[count-1] === option.key){
             if(this.state.userValue[count-1] === answer){
@@ -106,6 +113,10 @@ export default class Quiz extends Component {
 
     render(){
         
+        if(this.state.startQuiz){            
+        
+    }
+        
         var count=0;
         if(this.state.index < this.state.data.length){
             var option=this.state.data[this.state.index].options.map((data)=>{
@@ -120,7 +131,7 @@ export default class Quiz extends Component {
             });
         }
         
-        var result=this.state.data.map((data)=>{
+        var result=this.state.data.map((data,i)=>{
             count++;
             var options = data.options.map(option => (
                 this.handleResultValidate(count,option, data.answer)
@@ -129,7 +140,7 @@ export default class Quiz extends Component {
             
 
             return (
-                <Panel header={data.question}>
+                <Panel header={`${i+1}. ${data.question}`}>
                    <ButtonGroup>
                         <ToggleButtonGroup type="radio" name="options" defaultValue={this.state.userValue[count-1]} vertical>
                         {options}
@@ -143,14 +154,15 @@ export default class Quiz extends Component {
             <Row>
                 <Col md={12}>
                     <h2 id="takeq">Take Quiz</h2>
+                    <p id="timer">Countdown: {!this.state.startQuiz ? <p></p> : this.state.timer}</p>
                         <div id="listquestions">
-                        <h3>{this.state.data[this.state.index].question}</h3>
+                        <h3>{this.state.index + 1}. {this.state.data[this.state.index].question}</h3>
                         <ButtonGroup onChange={this.handleChoose}>
                             <ToggleButtonGroup type="radio" name="options" vertical>
                             {option}
                             </ToggleButtonGroup>
                         </ButtonGroup>
-                        <p Style="margin-top: 25px;"><Button onClick={this.Nextquestion}>Next Question</Button></p>
+                        <p Style="margin-top: 25px;"><Button disabled={this.state.isChoosed} onClick={this.Nextquestion}>Next Question</Button></p>
                     </div>
                 </Col>
             </Row>
@@ -168,7 +180,30 @@ export default class Quiz extends Component {
 
    return (
       <div>
-      {!this.state.resultDisplay ? test() : displayResult()}        
+      {!this.state.startQuiz ?
+            <p Style="text-align: center; margin-top: 100px;">
+            <Button 
+                bsSize="large"
+                bsStyle="primary" 
+                onClick={()=> {
+                    this.setState({startQuiz: true})
+                    var avaliabeTime = new Date().getTime() + 20000;
+                    var timer = setInterval(()=>{
+                        var now = new Date().getTime();
+                        var countdown = avaliabeTime - now;
+                        var min = Math.floor((countdown % (1000*60*60)) / (1000*60));
+                        var sec = Math.floor((countdown % (1000*60)) / 1000);
+                        if(min === 0 && sec === 0){
+                            this.setState({resultDisplay : true});
+                            clearInterval(timer);
+                        }else{
+                            this.setState({timer: `${min} Mins : ${sec} Secs` });
+                        }
+                    },1000)
+                }}
+            >Start Quiz</Button></p> :
+            !this.state.resultDisplay ? test() : displayResult()
+        }
       </div>
     )
   }
