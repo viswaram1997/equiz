@@ -14,7 +14,6 @@ export default class Quiz extends Component {
             resultDisplay:false,
             validationStatus: null,
             key: '',
-            color: [],
             score: 0,
             isChoosed : true,
             startQuiz: false,
@@ -39,10 +38,12 @@ export default class Quiz extends Component {
     }
 
     componentWillMount() {
-        var data = dataFetch().then((data)=>{
-           this.setState({data});
+        dataFetch().then((data)=>{
+           this.setState({
+               data,
+               loading: false
+        });
            console.log(data);
-            this.setState({loading: false})
         }).catch((e)=>{
             console.log(e);
         })
@@ -60,7 +61,7 @@ export default class Quiz extends Component {
        let answer = this.state.data[this.state.index].answer;
        let user = this.state.userValue;
        user.push(e.target.value);
-       console.log(e.target.value.toString())
+       console.log(user);
        this.setState({
            userValue: user,
            disabled: true,
@@ -105,18 +106,18 @@ export default class Quiz extends Component {
     }
 
 
-    handleResultValidate(count,option,answer){
+    handleResultValidate(i,count,option,answer){
         if(this.state.userValue[count-1] === option.key){
             if(this.state.userValue[count-1] === answer){
-                return <ToggleButton bsSize="large" bsStyle="success" value={option.key} disabled>{option.choice}</ToggleButton>
+                return <ToggleButton key={i.toString()} bsSize="large" bsStyle="success" value={option.key} disabled>{option.choice}</ToggleButton>
             }else{
-                return <ToggleButton bsSize="large" bsStyle="danger" value={option.key} disabled>{option.choice}</ToggleButton>
+                return <ToggleButton key={i.toString()} bsSize="large" bsStyle="danger" value={option.key} disabled>{option.choice}</ToggleButton>
             }
         }else{
             if(option.key === answer){
-                return <ToggleButton bsSize="large" bsStyle="success" value={option.key} disabled>{option.choice}</ToggleButton>
+                return <ToggleButton key={i.toString()} bsSize="large" bsStyle="success" value={option.key} disabled>{option.choice}</ToggleButton>
             }else{
-                return <ToggleButton bsSize="large" value={option.key} disabled>{option.choice}</ToggleButton>
+                return <ToggleButton key={i.toString()} bsSize="large" value={option.key} disabled>{option.choice}</ToggleButton>
             }
         }
     }
@@ -130,9 +131,10 @@ export default class Quiz extends Component {
         
         var count=0;
         if(this.state.index < this.state.data.length){
-            var option=this.state.data[this.state.index].options.map((data)=>{
+            var option=this.state.data[this.state.index].options.map((data,i)=>{
                 return (
                     <ToggleButton
+                        key={i.toString()}
                         bsSize="large"
                         bsStyle={this.validate(data.key)}
                         value={data.key}
@@ -145,7 +147,7 @@ export default class Quiz extends Component {
         var result=this.state.data.map((data,i)=>{
             count++;
             var options = data.options.map(option => (
-                this.handleResultValidate(count,option, data.answer)
+                this.handleResultValidate(i,count,option, data.answer)
             ));
 
             
