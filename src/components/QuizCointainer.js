@@ -27,8 +27,8 @@ export default class Quiz extends Component {
     }
    
     arrayShufle(data){
-        var i,j,k=1;
-        for(i=data.length-1; i>-1; i--){
+        //var k=1;
+        for(var i=data.length-1; i>-1; i--){
             const j = Math.floor(Math.random() * (i+1));
             [data[i], data[j]] = [data[j],data[i]];
             
@@ -187,7 +187,7 @@ export default class Quiz extends Component {
                 bsStyle="primary" 
                 onClick={()=> {
                     this.setState({startQuiz: true})
-                    var avaliabeTime = new Date().getTime() + 20000;
+                    var avaliabeTime = new Date().getTime() + 300000;
                     var timer = setInterval(()=>{
                         var now = new Date().getTime();
                         var countdown = avaliabeTime - now;
