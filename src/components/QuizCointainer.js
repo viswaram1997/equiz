@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import data from "../jsondata/data.json";
+//import data from "../jsondata/data.json";
 import {Col ,Row,ToggleButtonGroup,ToggleButton ,ButtonGroup, Button, Panel} from "react-bootstrap"
+import dataFetch from '../services/services';
 
 export default class Quiz extends Component {
     constructor(){
@@ -17,7 +18,8 @@ export default class Quiz extends Component {
             score: 0,
             isChoosed : true,
             startQuiz: false,
-            timer: ''
+            timer: '',
+            loading: true
         }
         this.Nextquestion=this.Nextquestion.bind(this);
         this.handleChoose=this.handleChoose.bind(this);
@@ -37,12 +39,20 @@ export default class Quiz extends Component {
     }
 
     componentWillMount() {
-        data.map(option=>{
+        var data = dataFetch().then((data)=>{
+           this.setState({data});
+           console.log(data);
+            this.setState({loading: false})
+        }).catch((e)=>{
+            console.log(e);
+        })
+
+        this.state.data.map(option=>{
            return this.arrayShufle(option.options);
         })
 
        this.setState({
-           data: this.arrayShufle(data)
+           data: this.arrayShufle(this.state.data)
        });
    }
 
@@ -50,6 +60,7 @@ export default class Quiz extends Component {
        let answer = this.state.data[this.state.index].answer;
        let user = this.state.userValue;
        user.push(e.target.value);
+       console.log(e.target.value.toString())
        this.setState({
            userValue: user,
            disabled: true,
@@ -184,7 +195,7 @@ export default class Quiz extends Component {
             <p Style="text-align: center; margin-top: 100px;">
             <Button 
                 bsSize="large"
-                bsStyle="primary" 
+                bsStyle="primary"
                 onClick={()=> {
                     this.setState({startQuiz: true})
                     var avaliabeTime = new Date().getTime() + 300000;
@@ -201,6 +212,7 @@ export default class Quiz extends Component {
                         }
                     },1000)
                 }}
+                disabled={this.state.loading}
             >Start Quiz</Button></p> :
             !this.state.resultDisplay ? test() : displayResult()
         }
