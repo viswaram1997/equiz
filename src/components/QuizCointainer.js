@@ -60,7 +60,7 @@ export default class Quiz extends Component {
    handleChoose(e){
        let answer = this.state.data[this.state.index].answer;
        let user = this.state.userValue;
-       user.push(e.target.value);
+       user.push(e);
        console.log(user);
        this.setState({
            userValue: user,
@@ -68,16 +68,16 @@ export default class Quiz extends Component {
            isChoosed: false
         });
         const score = this.state.score + 1;
-        if(answer === e.target.value){
+        if(answer === e){
             this.setState({
-              validationState: "success",
-              key: e.target.value,
+              validationStatus: "success",
+              key: e,
               score
             })
         }else{
             this.setState({
-              validationState: "danger",
-              key: e.target.value
+              validationStatus: "danger",
+              key: e
             })
         } 
     }
@@ -100,8 +100,12 @@ export default class Quiz extends Component {
     }   
 
     validate(e){
-        if(e === this.state.key){
-            return this.state.validationState
+        if(e === this.state.userValue[this.state.index]){
+            if(e=== this.state.data[this.state.index].answer){
+                return this.state.validationStatus
+            }else{
+                return this.state.validationStatus
+            }
         }
     }
 
@@ -136,8 +140,10 @@ export default class Quiz extends Component {
                     <ToggleButton
                         key={i.toString()}
                         bsSize="large"
+                        onClick={()=>{
+                            this.handleChoose(data.key);
+                        }}
                         bsStyle={this.validate(data.key)}
-                        value={data.key}
                         disabled={this.state.disabled}
                     >{data.choice}</ToggleButton>
                 )
@@ -170,7 +176,7 @@ export default class Quiz extends Component {
                     <p id="timer">Countdown: {!this.state.startQuiz ? <p></p> : this.state.timer}</p>
                         <div id="listquestions">
                         <h3>{this.state.index + 1}. {this.state.data[this.state.index].question}</h3>
-                        <ButtonGroup onChange={this.handleChoose}>
+                        <ButtonGroup>
                             <ToggleButtonGroup type="radio" name="options" vertical>
                             {option}
                             </ToggleButtonGroup>
